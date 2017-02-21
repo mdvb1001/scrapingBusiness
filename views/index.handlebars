@@ -1,0 +1,30 @@
+<div class="container">
+  <div class="row">
+    <div class="jumbotron main-banner">
+      <h1 class="text-center">MONGO SCRAPER</h1>
+       <p class="text-center">Washington Post Edition</p>
+      {{!-- <img src="/assets/img/burger_choice.jpg" class="center-block" alt="burger" height="120"> --}}
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-sm-12 col-md-12 col-lg-12">
+      <div class="panel panel-default">
+        <div class="panel-heading">ARTICLES SCRAPED</div>
+        <div class="panel-body">
+          {{#each articles}}
+          <div class="panel panel-default">
+          <div class="panel-body">
+            <a href={{link}}>{{title}}</a>
+            <form class=pull-right action="/{{this.id}}?_method=PUT" method="POST">
+              <input type="hidden" name="id" value="{{this.id}}">
+              <button type="submit" id="devour" margin="20px" class="btn btn-success">SAVE</button>
+            </form>
+          </div>
+          </div>
+          {{/each}}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+

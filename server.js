@@ -1,12 +1,32 @@
 // Dependencies:
 var mongoose = require('mongoose');
 var express = require('express');
+var bodyParser = require("body-parser");
+var methodOverride = require("method-override");
+var exphbs = require('express-handlebars')
 // Initialize express
 var app = express();
 // Snatches HTML from URLs
 var request = require('request');
 // Scrapes our HTML
 var cheerio = require('cheerio');
+
+// Sets up the Express app to handle data parsing
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.text());
+app.use(bodyParser.json({ type: "application/vnd.api+json" }));
+// Override with POST having ?_method=DELETE
+app.use(methodOverride("_method"));
+
+// Set the engine up for handlebars
+app.engine("handlebars", exphbs({ defaultLayout: "main" }));
+app.set("view engine", "handlebars");
+
+// Links the static content (i.e. css and images)
+app.use(express.static(__dirname + '/public'));
+
+
 var PORT = 3000;
 mongoose.connect('mongodb://localhost/' + PORT);
 var db = mongoose.connection;
@@ -24,6 +44,17 @@ var Business = mongoose.model('Business', articlesSchema);
 // Make a request call to grab the HTML body from the site of your choice
 // First, tell the console what server.js is doing
 console.log("\n***********************************\n" + "Grabbing every thread name and link\n" + "from Washington Post's website:" + "\n***********************************\n");
+
+app.get("/", function (req, res) {
+        Business.find().then(function (result) {
+            // define two categories of burgers
+            var articles = result;
+            return res.render("index", {
+                articles: articles
+            });
+        });
+    });
+
 app.get("/all", function (req, res) {
     Business.find(function (err, businesses) {
         if (err) return console.error(err);
