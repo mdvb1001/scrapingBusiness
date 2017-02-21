@@ -24,9 +24,15 @@ var Business = mongoose.model('Business', articlesSchema);
 // Make a request call to grab the HTML body from the site of your choice
 // First, tell the console what server.js is doing
 console.log("\n***********************************\n" + "Grabbing every thread name and link\n" + "from Washington Post's website:" + "\n***********************************\n");
+app.get("/all", function (req, res) {
+    Business.find(function (err, businesses) {
+        if (err) return console.error(err);
+        res.json(businesses);
+    });
+});
 app.get("/scrape", function (req, res) {
     // Making a request call for the Washington Post's Business section. The page's HTML is saved as the callback's third argument
-    request("https://www.washingtonpost.com/business/?utm_term=.910dd8bc2a57", function (error, response, html) {
+    request("https://www.washingtonpost.com/business/", function (error, response, html) {
         // Load the HTML into cheerio and save it to a variable
         // '$' becomes a shorthand for cheerio's selector commands, much like jQuery's '$'
         var $ = cheerio.load(html);
