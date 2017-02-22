@@ -3,8 +3,8 @@ var mongoose = require('mongoose');
 var express = require('express');
 var bodyParser = require("body-parser");
 var methodOverride = require("method-override");
-var exphbs = require('express-handlebars')
-    // Initialize express
+var exphbs = require('express-handlebars');
+// Initialize express
 var app = express();
 // Snatches HTML from URLs
 var request = require('request');
@@ -39,19 +39,82 @@ db.once('open', function () {
 var Schema = mongoose.Schema;
 var articlesSchema = new Schema({
     title: String,
-    link: String
+    link: {
+        type: String,
+        validate: {
+            validator: function (linkOfArticle, cb) {
+                Business.find({
+                    link: linkOfArticle
+                }, function (err, docs) {
+                    cb(docs.length === 0);
+                });
+            },
+            message: "Article link already exists"
+        }
+    },
+    saved: {
+        type: Number,
+        default: 0
+    },
+    note: {
+        type: String,
+        required: true,
+        minlength: 1,
+        default: ""
+    }
 });
 var Business = mongoose.model('Business', articlesSchema);
 // Make a request call to grab the HTML body from the site of your choice
 // First, tell the console what server.js is doing
 console.log("\n***********************************\n" + "Grabbing every thread name and link\n" + "from Washington Post's website:" + "\n***********************************\n");
 app.get("/", function (req, res) {
-    Business.find().then(function (result) {
+    Business.find().sort({
+        _id: 1
+    }).then(function (result) {
         // define two categories of burgers
         var articles = result;
+        console.log("articles: " + articles);
         return res.render("index", {
             articles: articles
         });
+    });
+});
+app.get("/saved", function (req, res) {
+    Business.find().sort({
+        _id: 1
+    }).then(function (result) {
+        // define two categories of burgers
+        var articlesSaved = [];
+        for (var i = 0; i < result.length; i++) {
+            if (result[i].saved === 1) {
+                articlesSaved.push(result[i]);
+            }
+        }
+        return res.render("saved", {
+            articlesSaved: articlesSaved
+        });
+    });
+});
+app.put("/delete/:id", function (req, res) {
+    var articleDelete = req.params.id;
+    console.log("articleDelete: " + articleDelete);
+    Business.findByIdAndUpdate(articleDelete, {
+        $set: {
+            saved: 0
+        }
+    }).then(function (result) {
+        res.redirect('/saved');
+    });
+});
+app.put('/:id', function (req, res) {
+    var selectArticleId = req.params.id;
+    console.log("selectArticleId: " + selectArticleId);
+    Business.findByIdAndUpdate(selectArticleId, {
+        $set: {
+            saved: 1
+        }
+    }).then(function (result) {
+        res.redirect('/');
     });
 });
 app.get("/all", function (req, res) {
@@ -82,35 +145,21 @@ app.get("/scrape", function (req, res) {
                     title: title,
                     link: link
                 });
-                function updateArticles(article, cb) {
-                    listOfArticles.find({
-                        title: article.title
-                    }, function (err, docs) {
-                        if (docs.length) {
-                            cb('Already exists already', null);
-                        } else {
-                            article.save(function (err) {
-                                cb(err, article);
-                            });
-                        }
-                    });
-                }
-                // the above function replaced the commented section below:
-                // listOfArticles.save(function (err) {
-                //     if (err) {
-                //         return handleError(err);
-                //         // saved!
-                //     } else { // Otherwise,
-                //         // Log the saved data
-                //         console.log("title of article: " + listOfArticles.title);
-                //         console.log("link of article: " + listOfArticles.link);
-                //     }
-                // });
+                listOfArticles.save(function (err) {
+                    if (err) {
+                        console.log("This is the err: " + err);
+                        // saved!
+                    } else { // Otherwise,
+                        // Log the saved data
+                        console.log("title of article: " + listOfArticles.title);
+                        console.log("link of article: " + listOfArticles.link);
+                    }
+                });
             }
             // Log the result once cheerio analyzes each of its selected elements
         });
     });
-    res.send("Scrape Complete");
+    res.redirect("/");
 });
 // This will send a "Scrape Complete" message to the browser
 // Listen on port 3000
