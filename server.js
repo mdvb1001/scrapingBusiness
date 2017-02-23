@@ -10,6 +10,8 @@ var app = express();
 var request = require('request');
 // Scrapes our HTML
 var cheerio = require('cheerio');
+var Business = require("./models/Business.js");
+var Note = require("./models/Note.js");
 // Sets up the Express app to handle data parsing
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
@@ -30,39 +32,13 @@ app.set("view engine", "handlebars");
 app.use(express.static(__dirname + '/public'));
 var PORT = 3000;
 mongoose.connect('mongodb://localhost/' + PORT);
+mongoose.Promise = Promise;
 var db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', function () {
     console.log('MONGOOSE is working');
     // we're connected!
 });
-var Schema = mongoose.Schema;
-var articlesSchema = new Schema({
-    title: String,
-    link: {
-        type: String,
-        validate: {
-            validator: function (linkOfArticle, cb) {
-                Business.find({
-                    link: linkOfArticle
-                }, function (err, docs) {
-                    cb(docs.length === 0);
-                });
-            },
-            message: "Article link already exists"
-        }
-    },
-    saved: {
-        type: Number,
-        default: 0
-    },
-    note: {
-        type: String,
-        required: false,
-        default: ""
-    }
-});
-var Business = mongoose.model('Business', articlesSchema);
 // Make a request call to grab the HTML body from the site of your choice
 // First, tell the console what server.js is doing
 console.log("\n***********************************\n" + "Grabbing every thread name and link\n" + "from Washington Post's website:" + "\n***********************************\n");
@@ -72,7 +48,7 @@ app.get("/", function (req, res) {
     }).then(function (result) {
         // define two categories of burgers
         var articles = result;
-        console.log("articles: " + articles);
+        console.log("Articles: " + articles);
         return res.render("index", {
             articles: articles
         });
@@ -121,7 +97,6 @@ app.put('/:id', function (req, res) {
 app.put('/note/:id', function (req, res) {
     var selectArticleId = req.params.id;
     var newNote = req.body;
-
     console.log("selectArticleId: " + selectArticleId);
     Business.findByIdAndUpdate(selectArticleId, {
         $set: {
@@ -129,6 +104,24 @@ app.put('/note/:id', function (req, res) {
         }
     }).then(function (result) {
         res.redirect('/saved');
+    });
+});
+
+app.get("/write-note/id:", function(req, res) {
+    var selectArticleId = req.params.id;
+    var newNote = req.body;
+    Business.findByIdAndUpdate(selectArticleId, {
+        $set: {
+            note: newNote.foo
+        }
+    })
+    .populate("Note")
+    .exec(function(err, doc) {
+        if (error) {
+            res.send(error);
+        } else {
+            res.send(doc);
+        }
     });
 });
 // Api route to all articles in JSON format
@@ -177,6 +170,8 @@ app.get("/scrape", function (req, res) {
     });
     res.redirect("/");
 });
+
+
 // This will send a "Scrape Complete" message to the browser
 // Listen on port 3000
 app.listen(3000, function () {
