@@ -125,10 +125,10 @@ app.put('/note/:id', function (req, res) {
     console.log("selectArticleId: " + selectArticleId);
     Business.findByIdAndUpdate(selectArticleId, {
         $set: {
-            saved: newNote.foo
+            note: newNote.foo
         }
     }).then(function (result) {
-        res.redirect('/note/:id');
+        res.redirect('/saved');
     });
 });
 // Api route to all articles in JSON format
