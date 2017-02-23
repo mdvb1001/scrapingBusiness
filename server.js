@@ -58,8 +58,7 @@ var articlesSchema = new Schema({
     },
     note: {
         type: String,
-        required: true,
-        minlength: 1,
+        required: false,
         default: ""
     }
 });
@@ -69,7 +68,7 @@ var Business = mongoose.model('Business', articlesSchema);
 console.log("\n***********************************\n" + "Grabbing every thread name and link\n" + "from Washington Post's website:" + "\n***********************************\n");
 app.get("/", function (req, res) {
     Business.find().sort({
-        _id: 1
+        _id: -1
     }).then(function (result) {
         // define two categories of burgers
         var articles = result;
@@ -81,7 +80,7 @@ app.get("/", function (req, res) {
 });
 app.get("/saved", function (req, res) {
     Business.find().sort({
-        _id: 1
+        _id: -1
     }).then(function (result) {
         // define two categories of burgers
         var articlesSaved = [];
@@ -95,6 +94,7 @@ app.get("/saved", function (req, res) {
         });
     });
 });
+// route to delete an article from the saved articles list
 app.put("/delete/:id", function (req, res) {
     var articleDelete = req.params.id;
     console.log("articleDelete: " + articleDelete);
@@ -106,6 +106,7 @@ app.put("/delete/:id", function (req, res) {
         res.redirect('/saved');
     });
 });
+// route to save an article
 app.put('/:id', function (req, res) {
     var selectArticleId = req.params.id;
     console.log("selectArticleId: " + selectArticleId);
@@ -117,12 +118,27 @@ app.put('/:id', function (req, res) {
         res.redirect('/');
     });
 });
+app.put('/note/:id', function (req, res) {
+    var selectArticleId = req.params.id;
+    var newNote = req.body;
+
+    console.log("selectArticleId: " + selectArticleId);
+    Business.findByIdAndUpdate(selectArticleId, {
+        $set: {
+            saved: newNote.foo
+        }
+    }).then(function (result) {
+        res.redirect('/note/:id');
+    });
+});
+// Api route to all articles in JSON format
 app.get("/all", function (req, res) {
     Business.find(function (err, businesses) {
         if (err) return console.error(err);
         res.json(businesses);
     });
 });
+
 app.get("/scrape", function (req, res) {
     // Making a request call for the Washington Post's Business section. The page's HTML is saved as the callback's third argument
     request("https://www.washingtonpost.com/business/", function (error, response, html) {
