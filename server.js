@@ -94,35 +94,49 @@ app.put('/:id', function (req, res) {
         res.redirect('/');
     });
 });
-app.put('/note/:id', function (req, res) {
-    var selectArticleId = req.params.id;
-    var newNote = req.body;
-    console.log("selectArticleId: " + selectArticleId);
-    Business.findByIdAndUpdate(selectArticleId, {
-        $set: {
-            note: newNote.foo
-        }
-    }).then(function (result) {
-        res.redirect('/saved');
-    });
-});
 
-app.get("/write-note/id:", function(req, res) {
-    var selectArticleId = req.params.id;
-    var newNote = req.body;
-    Business.findByIdAndUpdate(selectArticleId, {
-        $set: {
-            note: newNote.foo
+// app.put('/note/:id', function (req, res) {
+//     var selectArticleId = req.params.id;
+//     var newNote = req.body;
+//     console.log("selectArticleId: " + selectArticleId);
+//     Business.findByIdAndUpdate(selectArticleId, {
+//         $set: {
+//             note: newNote.foo
+//         }
+//     }).then(function (result) {
+//         res.redirect('/saved');
+//     });
+// });
+
+// Create a new note or replace an existing note
+app.post("/note/:id", function(req, res) {
+  // Create a new note and pass the req.body to the entry
+  var newNote = new Note(req.body);
+  var selectArticleId = req.params.id;
+
+  // And save the new note the db
+  newNote.save(function(error, doc) {
+    // Log any errors
+    if (error) {
+      console.log(error);
+    }
+    // Otherwise...
+    else {
+      // Use the article id to find and update it's note
+      Business.findOneAndUpdate({ "_id": selectArticleId }, { "note": req.params.foo })
+      // Execute the above query
+      .exec(function(err, doc) {
+        // Log any errors
+        if (err) {
+          console.log(err);
         }
-    })
-    .populate("Note")
-    .exec(function(err, doc) {
-        if (error) {
-            res.send(error);
-        } else {
-            res.send(doc);
+        else {
+          // Or send the document to the browser
+          res.send(doc);
         }
-    });
+      });
+    }
+  });
 });
 // Api route to all articles in JSON format
 app.get("/all", function (req, res) {

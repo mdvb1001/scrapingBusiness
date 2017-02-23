@@ -1,9 +1,15 @@
 var mongoose = require('mongoose');
+mongoose.Types.ObjectId.isValid('your id here');
+
 var Schema = mongoose.Schema;
 var articlesSchema = new Schema({
-    title: String,
+    title: {
+        type: String,
+        required: true
+    },
     link: {
         type: String,
+        required: true,
         // unique: true, // this would work
         validate: {
             validator: function (linkOfArticle, cb) {
@@ -21,11 +27,9 @@ var articlesSchema = new Schema({
         default: 0
     },
     note: {
-        type: String,
-        required: false,
-        default: ""
+        type: Schema.Types.ObjectId,
+        ref: "Note"
     }
 });
 var Business = mongoose.model('Business', articlesSchema);
-
 module.exports = Business;
