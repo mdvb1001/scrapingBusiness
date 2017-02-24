@@ -95,19 +95,6 @@ app.put('/:id', function (req, res) {
     });
 });
 
-// app.put('/note/:id', function (req, res) {
-//     var selectArticleId = req.params.id;
-//     var newNote = req.body;
-//     console.log("selectArticleId: " + selectArticleId);
-//     Business.findByIdAndUpdate(selectArticleId, {
-//         $set: {
-//             note: newNote.foo
-//         }
-//     }).then(function (result) {
-//         res.redirect('/saved');
-//     });
-// });
-
 // Create a new note or replace an existing note
 app.post("/note/:id", function(req, res) {
   // Create a new note and pass the req.body to the entry
