@@ -63,11 +63,39 @@ app.get("/saved", function (req, res) {
         for (var i = 0; i < result.length; i++) {
             if (result[i].saved === 1) {
                 articlesSaved.push(result[i]);
+                console.log("NOOOOTES: " + result[i].notes);
             }
         }
         return res.render("saved", {
             articlesSaved: articlesSaved
         });
+    });
+});
+// Route to see what library looks like WITH populating
+app.get("/populated", function(req, res) {
+  // Set up a query to find all of the entries in our Library..
+  Business.find({})
+    // ..and string a call to populate the entry with the books stored in the library's books array
+    // This simple query is incredibly powerful. Remember this one!
+    .populate("notes")
+    // Now, execute that query
+    .exec(function(error, doc) {
+      // Send any errors to the browser
+      if (error) {
+        res.send(error);
+      }
+      // Or, send our results to the browser, which will now include the books stored in the library
+      else {
+        res.send(doc);
+        console.log("does this work: " + doc[3].notes[0].body);
+      }
+    });
+});
+
+app.get("/notes", function (req, res) {
+    Note.find(function (err, businesses) {
+        if (err) return console.error(err);
+        res.json(businesses);
     });
 });
 // route to delete an article from the saved articles list
