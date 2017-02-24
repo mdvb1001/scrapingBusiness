@@ -72,7 +72,7 @@ app.get("/saved", function (req, res) {
     });
 });
 // Route to see what library looks like WITH populating
-app.get("/populated", function(req, res) {
+app.get("/saved/modal", function(req, res) {
   // Set up a query to find all of the entries in our Library..
   Business.find({})
     // ..and string a call to populate the entry with the books stored in the library's books array
@@ -86,8 +86,11 @@ app.get("/populated", function(req, res) {
       }
       // Or, send our results to the browser, which will now include the books stored in the library
       else {
-        res.send(doc);
         console.log("does this work: " + doc[3].notes[0].body);
+        // res.send(doc);
+        return res.render("saved", {
+            notesSaved: notesSaved
+        });
       }
     });
 });

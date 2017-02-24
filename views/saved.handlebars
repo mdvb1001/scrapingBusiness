@@ -45,8 +45,8 @@
               </form>
               <div class="modal fade" id="myModal{{this.id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
                 <div class="modal-dialog" role="document">
-              {{!--   {{#each notesSaved}}{{this.body}}{{/each}} --}}
                   <div class="modal-content">
+                {{#each notesSaved}}{{this.id}}{{/each}}
                     <div class="modal-header">
                       <h5 class="modal-title" id="exampleModalLabel">{{this.id}}</h5>
                       <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -61,7 +61,7 @@
                       <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                       <button type="submit" class="btn btn-primary">Save changes</button>
                       </form>
-                    </div>n
+                    </div>
                   </div>
                 </div>
               </div>
