@@ -26,10 +26,10 @@ var articlesSchema = new Schema({
         type: Number,
         default: 0
     },
-    note: {
+     notes: [{
         type: Schema.Types.ObjectId,
-        ref: "Note"
-    }
+        ref: 'Note'
+    }]
 });
 var Business = mongoose.model('Business', articlesSchema);
 module.exports = Business;

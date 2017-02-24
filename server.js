@@ -112,7 +112,9 @@ app.put('/:id', function (req, res) {
 app.post("/note/:id", function(req, res) {
   // Create a new note and pass the req.body to the entry
   var newNote = new Note(req.body);
+  console.log("NEWNOTE:" + newNote);
   var selectArticleId = req.params.id;
+  console.log("selectArticleId:" + selectArticleId);
 
   // And save the new note the db
   newNote.save(function(error, doc) {
@@ -123,16 +125,15 @@ app.post("/note/:id", function(req, res) {
     // Otherwise...
     else {
       // Use the article id to find and update it's note
-      Business.findOneAndUpdate({ "_id": selectArticleId }, { "note": req.params.foo })
-      // Execute the above query
-      .exec(function(err, doc) {
-        // Log any errors
+      console.log("doc._id:" + doc._id);
+      Business.findOneAndUpdate({ "_id": selectArticleId }, { $push: { "notes": doc._id } }, { new: true }, function(err, newdoc) {
+        // Send any errors to the browser
         if (err) {
-          console.log(err);
+          res.send(err);
         }
+        // Or send the newdoc to the browser
         else {
-          // Or send the document to the browser
-          res.send(doc);
+          res.send(newdoc);
         }
       });
     }
@@ -164,18 +165,19 @@ app.get("/scrape", function (req, res) {
             // If this title element had both a title and a link
             if (title && link) {
                 // Save the data in the scrapedData db
-                var listOfArticles = new Business({
+                var entry = new Business({
                     title: title,
                     link: link
                 });
-                listOfArticles.save(function (err) {
+                entry.save(function (err, doc) {
                     if (err) {
                         console.log("This is the err: " + err);
                         // saved!
                     } else { // Otherwise,
                         // Log the saved data
-                        console.log("title of article: " + listOfArticles.title);
-                        console.log("link of article: " + listOfArticles.link);
+                        console.log('Docs: ' + doc);
+                        console.log("title of article: " + entry.title);
+                        console.log("link of article: " + entry.link);
                     }
                 });
             }
