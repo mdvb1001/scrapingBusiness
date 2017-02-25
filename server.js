@@ -54,51 +54,76 @@ app.get("/", function (req, res) {
         });
     });
 });
-app.get("/saved", function (req, res) {
-    Business.find().sort({
-        _id: -1
-    }).then(function (result) {
-        // define two categories of burgers
-        var articlesSaved = [];
-        for (var i = 0; i < result.length; i++) {
-            if (result[i].saved === 1) {
-                articlesSaved.push(result[i]);
-                console.log("NOOOOTES: " + result[i].notes);
-            }
+// app.get("/saved/hello", function (req, res) {
+var findNotesBody = function (id) {
+    Note.findOne({
+        _id: id
+    }, function (err, notes) {
+        if (err) {
+            console.error(err);
+        } else {
+            console.log("NOTES: " + notes.body);
+            // return render("saved", {
+            //         notesSaved: notes
+            //     });
         }
-        return res.render("saved", {
-            articlesSaved: articlesSaved
-        });
+    });
+};
+// });
+
+app.get("/saved", function (req, res) {
+    Business.find({}).populate("notes").exec(function (error, doc) {
+    var articlesSaved = [];
+    var notesSaved = [];
+        if (error) {
+            res.send(error);
+        } else {
+            Business.find().sort({
+                _id: -1
+            }).then(function (result) {
+                // define two categories of burgers
+                for (var i = 0; i < result.length; i++) {
+                    if (result[i].saved === 1) {
+                        articlesSaved.push(result[i]);
+                        findNotesBody(result[i].notes);
+                console.log("aslkdfjaslkdfjasdlk:" + notesSaved);
+                    }
+                }
+                return res.render("saved", {
+                    articlesSaved: articlesSaved,
+                    notesSaved: notesSaved
+                });
+            });
+        }
     });
 });
 // Route to see what library looks like WITH populating
-app.get("/saved/modal", function(req, res) {
-  // Set up a query to find all of the entries in our Library..
-  Business.find({})
-    // ..and string a call to populate the entry with the books stored in the library's books array
-    // This simple query is incredibly powerful. Remember this one!
-    .populate("notes")
-    // Now, execute that query
-    .exec(function(error, doc) {
-      // Send any errors to the browser
-      if (error) {
-        res.send(error);
-      }
-      // Or, send our results to the browser, which will now include the books stored in the library
-      else {
-        console.log("does this work: " + doc[3].notes[0].body);
-        // res.send(doc);
-        return res.render("saved", {
-            notesSaved: notesSaved
+app.get("/saved/modal", function (req, res) {
+    // Set up a query to find all of the entries in our Library..
+    Business.find({})
+        // ..and string a call to populate the entry with the books stored in the library's books array
+        // This simple query is incredibly powerful. Remember this one!
+        .populate("notes")
+        // Now, execute that query
+        .exec(function (error, doc) {
+            // Send any errors to the browser
+            if (error) {
+                res.send(error);
+            }
+            // Or, send our results to the browser, which will now include the books stored in the library
+            else {
+                console.log("does this work: " + doc[3].notes[0].body);
+                res.send(doc);
+                return res.render("saved", {
+                    notesSaved: notesSaved
+                });
+            }
         });
-      }
-    });
 });
-
 app.get("/notes", function (req, res) {
-    Note.find(function (err, businesses) {
+    Note.find(function (err, notes) {
         if (err) return console.error(err);
-        res.json(businesses);
+        res.json(notes);
     });
 });
 // route to delete an article from the saved articles list
@@ -125,37 +150,43 @@ app.put('/:id', function (req, res) {
         res.redirect('/');
     });
 });
-
 // Create a new note or replace an existing note
-app.post("/note/:id", function(req, res) {
-  // Create a new note and pass the req.body to the entry
-  var newNote = new Note(req.body);
-  console.log("NEWNOTE:" + newNote);
-  var selectArticleId = req.params.id;
-  console.log("selectArticleId:" + selectArticleId);
-
-  // And save the new note the db
-  newNote.save(function(error, doc) {
-    // Log any errors
-    if (error) {
-      console.log(error);
-    }
-    // Otherwise...
-    else {
-      // Use the article id to find and update it's note
-      console.log("doc._id:" + doc._id);
-      Business.findOneAndUpdate({ "_id": selectArticleId }, { $push: { "notes": doc._id } }, { new: true }, function(err, newdoc) {
-        // Send any errors to the browser
-        if (err) {
-          res.send(err);
+app.post("/note/:id", function (req, res) {
+    // Create a new note and pass the req.body to the entry
+    var newNote = new Note(req.body);
+    console.log("NEWNOTE:" + newNote);
+    var selectArticleId = req.params.id;
+    console.log("selectArticleId:" + selectArticleId);
+    // And save the new note the db
+    newNote.save(function (error, doc) {
+        // Log any errors
+        if (error) {
+            console.log(error);
         }
-        // Or send the newdoc to the browser
+        // Otherwise...
         else {
-          res.send(newdoc);
+            // Use the article id to find and update it's note
+            console.log("doc._id:" + doc._id);
+            Business.findOneAndUpdate({
+                "_id": selectArticleId
+            }, {
+                $push: {
+                    "notes": doc._id
+                }
+            }, {
+                new: true
+            }, function (err, newdoc) {
+                // Send any errors to the browser
+                if (err) {
+                    res.send(err);
+                }
+                // Or send the newdoc to the browser
+                else {
+                    res.send(newdoc);
+                }
+            });
         }
-      });
-    }
-  });
+    });
 });
 // Api route to all articles in JSON format
 app.get("/all", function (req, res) {
@@ -164,7 +195,6 @@ app.get("/all", function (req, res) {
         res.json(businesses);
     });
 });
-
 app.get("/scrape", function (req, res) {
     // Making a request call for the Washington Post's Business section. The page's HTML is saved as the callback's third argument
     request("https://www.washingtonpost.com/business/", function (error, response, html) {
@@ -204,8 +234,6 @@ app.get("/scrape", function (req, res) {
     });
     res.redirect("/");
 });
-
-
 // This will send a "Scrape Complete" message to the browser
 // Listen on port 3000
 app.listen(3000, function () {
