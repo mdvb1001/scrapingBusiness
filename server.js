@@ -90,6 +90,17 @@ app.get('/saved', function(_request, response) {
         });
 });
 
+app.delete('/notes/:id', function(request, response) {
+        var noteId = request.params.id;
+        Note.remove({ _id: noteId }, function(error, _note) {
+            if (error) {
+                response.send(error);
+            } else {
+                response.redirect('/saved');
+            }
+        });
+    });
+
 // app.get("/saved", function(req, res) {
 //     Business.find({}).populate("notes").exec(function(error, doc) {
 //         var articlesSaved = [];
@@ -142,7 +153,7 @@ app.get("/saved/modal", function(req, res) {
             }
         });
 });
-app.get("/notes", function(req, res) {
+app.get("/api/notes", function(req, res) {
     Note.find(function(err, notes) {
         if (err) return console.error(err);
         res.json(notes);
@@ -254,7 +265,7 @@ app.get("/scrape", function(req, res) {
             // Log the result once cheerio analyzes each of its selected elements
         });
     });
-    res.redirect("/");
+    res.redirect("/").reload();
 });
 // This will send a "Scrape Complete" message to the browser
 // Listen on port 3000
