@@ -35,17 +35,17 @@ mongoose.connect('mongodb://localhost/' + PORT);
 mongoose.Promise = Promise;
 var db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
-db.once('open', function () {
+db.once('open', function() {
     console.log('MONGOOSE is working');
     // we're connected!
 });
 // Make a request call to grab the HTML body from the site of your choice
 // First, tell the console what server.js is doing
 console.log("\n***********************************\n" + "Grabbing every thread name and link\n" + "from Washington Post's website:" + "\n***********************************\n");
-app.get("/", function (req, res) {
+app.get("/", function(req, res) {
     Business.find().sort({
         _id: -1
-    }).then(function (result) {
+    }).then(function(result) {
         // define two categories of burgers
         var articles = result;
         console.log("Articles: " + articles);
@@ -55,14 +55,15 @@ app.get("/", function (req, res) {
     });
 });
 // app.get("/saved/hello", function (req, res) {
-var findNotesBody = function (id) {
+var findNotesBody = function(id) {
     Note.findOne({
         _id: id
-    }, function (err, notes) {
+    }, function(err, notes) {
         if (err) {
             console.error(err);
         } else {
-            console.log("NOTES: " + notes.body);
+            return notes;
+            // console.log(notes);
             // return render("saved", {
             //         notesSaved: notes
             //     });
@@ -71,41 +72,62 @@ var findNotesBody = function (id) {
 };
 // });
 
-app.get("/saved", function (req, res) {
-    Business.find({}).populate("notes").exec(function (error, doc) {
-    var articlesSaved = [];
-    var notesSaved = [];
-        if (error) {
-            res.send(error);
-        } else {
-            Business.find().sort({
-                _id: -1
-            }).then(function (result) {
-                // define two categories of burgers
-                for (var i = 0; i < result.length; i++) {
-                    if (result[i].saved === 1) {
-                        articlesSaved.push(result[i]);
-                        findNotesBody(result[i].notes);
-                console.log("aslkdfjaslkdfjasdlk:" + notesSaved);
-                    }
-                }
-                return res.render("saved", {
-                    articlesSaved: articlesSaved,
-                    notesSaved: notesSaved
+app.get('/saved', function(_request, response) {
+    Business.find({saved: 1})
+        .populate('notes')
+        .exec(function(error, articles) {
+            if (error) {
+                response.send(error);
+            } else {
+                var articleMap = articles.map(function(article) {
+                return article;
+
                 });
-            });
-        }
-    });
+                response.render('saved', {
+                    articlesSaved: articleMap
+                });
+            }
+        });
 });
+
+// app.get("/saved", function(req, res) {
+//     Business.find({}).populate("notes").exec(function(error, doc) {
+//         var articlesSaved = [];
+//         var notesSaved = [];
+//         if (error) {
+//             res.send(error);
+//         } else {
+//             Business.find().sort({
+//                 _id: -1
+//             }).then(function(result) {
+//                 // define two categories of burgers
+//                 for (var i = 0; i < result.length; i++) {
+//                     if (result[i].saved === 1) {
+//                         var getThoseNoteObjects = findNotesBody(result[i].notes);
+//                         articlesSaved.push(result[i]);
+//                         notesSaved.push(getThoseNoteObjects);
+//                         // notesSaved.push(noteBodies);
+//                         console.log("aslkdfjaslkdfjasdlk: " + notesSaved);
+//                         // console.log("articlesSaved: " + articlesSaved);
+//                     }
+//                 }
+//                 return res.render("saved", {
+//                     articlesSaved: articlesSaved,
+//                     notesSaved: notesSaved
+//                 });
+//             });
+//         }
+//     });
+// });
 // Route to see what library looks like WITH populating
-app.get("/saved/modal", function (req, res) {
+app.get("/saved/modal", function(req, res) {
     // Set up a query to find all of the entries in our Library..
     Business.find({})
         // ..and string a call to populate the entry with the books stored in the library's books array
         // This simple query is incredibly powerful. Remember this one!
         .populate("notes")
         // Now, execute that query
-        .exec(function (error, doc) {
+        .exec(function(error, doc) {
             // Send any errors to the browser
             if (error) {
                 res.send(error);
@@ -120,45 +142,45 @@ app.get("/saved/modal", function (req, res) {
             }
         });
 });
-app.get("/notes", function (req, res) {
-    Note.find(function (err, notes) {
+app.get("/notes", function(req, res) {
+    Note.find(function(err, notes) {
         if (err) return console.error(err);
         res.json(notes);
     });
 });
 // route to delete an article from the saved articles list
-app.put("/delete/:id", function (req, res) {
+app.put("/delete/:id", function(req, res) {
     var articleDelete = req.params.id;
     console.log("articleDelete: " + articleDelete);
     Business.findByIdAndUpdate(articleDelete, {
         $set: {
             saved: 0
         }
-    }).then(function (result) {
+    }).then(function(result) {
         res.redirect('/saved');
     });
 });
 // route to save an article
-app.put('/:id', function (req, res) {
+app.put('/:id', function(req, res) {
     var selectArticleId = req.params.id;
     console.log("selectArticleId: " + selectArticleId);
     Business.findByIdAndUpdate(selectArticleId, {
         $set: {
             saved: 1
         }
-    }).then(function (result) {
+    }).then(function(result) {
         res.redirect('/');
     });
 });
 // Create a new note or replace an existing note
-app.post("/note/:id", function (req, res) {
+app.post("/note/:id", function(req, res) {
     // Create a new note and pass the req.body to the entry
     var newNote = new Note(req.body);
     console.log("NEWNOTE:" + newNote);
     var selectArticleId = req.params.id;
     console.log("selectArticleId:" + selectArticleId);
     // And save the new note the db
-    newNote.save(function (error, doc) {
+    newNote.save(function(error, doc) {
         // Log any errors
         if (error) {
             console.log(error);
@@ -175,7 +197,7 @@ app.post("/note/:id", function (req, res) {
                 }
             }, {
                 new: true
-            }, function (err, newdoc) {
+            }, function(err, newdoc) {
                 // Send any errors to the browser
                 if (err) {
                     res.send(err);
@@ -189,21 +211,21 @@ app.post("/note/:id", function (req, res) {
     });
 });
 // Api route to all articles in JSON format
-app.get("/all", function (req, res) {
-    Business.find(function (err, businesses) {
+app.get("/all", function(req, res) {
+    Business.find(function(err, businesses) {
         if (err) return console.error(err);
         res.json(businesses);
     });
 });
-app.get("/scrape", function (req, res) {
+app.get("/scrape", function(req, res) {
     // Making a request call for the Washington Post's Business section. The page's HTML is saved as the callback's third argument
-    request("https://www.washingtonpost.com/business/", function (error, response, html) {
+    request("https://www.washingtonpost.com/business/", function(error, response, html) {
         // Load the HTML into cheerio and save it to a variable
         // '$' becomes a shorthand for cheerio's selector commands, much like jQuery's '$'
         var $ = cheerio.load(html);
         // With cheerio, find each p-tag with the "title" class
         // (i: iterator. element: the current element)
-        $(".story-headline h3").each(function (i, element) {
+        $(".story-headline h3").each(function(i, element) {
             // Save the text of the element (this) in a "title" variable
             var title = $(this).text();
             // In the currently selected element, look at its child elements (i.e., its a-tags),
@@ -217,7 +239,7 @@ app.get("/scrape", function (req, res) {
                     title: title,
                     link: link
                 });
-                entry.save(function (err, doc) {
+                entry.save(function(err, doc) {
                     if (err) {
                         console.log("This is the err: " + err);
                         // saved!
@@ -236,6 +258,6 @@ app.get("/scrape", function (req, res) {
 });
 // This will send a "Scrape Complete" message to the browser
 // Listen on port 3000
-app.listen(3000, function () {
+app.listen(3000, function() {
     console.log("App running on port 3000!");
 });

@@ -31,9 +31,7 @@
     <div class="col-sm-12 col-md-12 col-lg-12">
       <div class="panel panel-default">
         <div class="panel-heading">ARTICLES SAVED</div>
-        {{#each notesSaved}}
-
-                {{id}}{{/each}}
+        
         <div class="panel-body">
           {{#each articlesSaved}}
           <div class="panel panel-default">
@@ -49,6 +47,11 @@
               <div class="modal fade" id="myModal{{this.id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
                 <div class="modal-dialog" role="document">
                   <div class="modal-content">
+
+{{#each this.notes}}
+                {{this.body}}
+        {{/each}}
+
                     <div class="modal-header">
                       <h5 class="modal-title" id="exampleModalLabel">{{this.id}}</h5>
                       <button type="button" class="close" data-dismiss="modal" aria-label="Close">
