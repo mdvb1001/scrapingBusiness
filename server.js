@@ -31,7 +31,7 @@ app.set("view engine", "handlebars");
 // Links the static content (i.e. css and images)
 app.use(express.static(__dirname + '/public'));
 var PORT = process.env.PORT || 3000;
-mongoose.connect("mongodb://heroku_9r5bmqcj:9apb800gnn2co2kcg77ee7t8uq@ds161099.mlab.com:61099/heroku_9r5bmqcj");
+mongoose.connect("mongodb://heroku_fm3ksx11:fcc311q2u3s5i8qcj1t8avkigd@ds161029.mlab.com:61029/heroku_fm3ksx11");
 mongoose.Promise = Promise;
 var db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
