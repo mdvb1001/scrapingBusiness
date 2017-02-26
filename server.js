@@ -30,8 +30,8 @@ app.engine("handlebars", exphbs({
 app.set("view engine", "handlebars");
 // Links the static content (i.e. css and images)
 app.use(express.static(__dirname + '/public'));
-var PORT = 3000;
-mongoose.connect('mongodb://localhost/' + PORT);
+var PORT = process.env.PORT || 3000;
+mongoose.connect("mongodb://heroku_9r5bmqcj:9apb800gnn2co2kcg77ee7t8uq@ds161099.mlab.com:61099/heroku_9r5bmqcj");
 mongoose.Promise = Promise;
 var db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
@@ -265,7 +265,7 @@ app.get("/scrape", function(req, res) {
             // Log the result once cheerio analyzes each of its selected elements
         });
     });
-    res.redirect("/").reload();
+    res.redirect("/");
 });
 // This will send a "Scrape Complete" message to the browser
 // Listen on port 3000
