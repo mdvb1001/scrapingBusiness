@@ -17,7 +17,7 @@
         <li><a href="/saved">Saved Articles</a></li>
       </ul>
       <form action="/scrape" method="GET">
-        <button type="submit" class="btn btn-danger navbar-btn">Scrape New Articles!</button>
+        <button type="submit" onclick="myFunction()" class="btn btn-danger navbar-btn">Scrape New Articles!</button>
       </form>
     </div>
   </div>
@@ -51,4 +51,10 @@
     </div>
   </div>
 </div>
+<script>
+function myFunction() {
+    location.reload();
+}
+</script>
+
 

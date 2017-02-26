@@ -131,28 +131,28 @@ app.delete('/notes/:id', function(request, response) {
 //     });
 // });
 // Route to see what library looks like WITH populating
-app.get("/saved/modal", function(req, res) {
-    // Set up a query to find all of the entries in our Library..
-    Business.find({})
-        // ..and string a call to populate the entry with the books stored in the library's books array
-        // This simple query is incredibly powerful. Remember this one!
-        .populate("notes")
-        // Now, execute that query
-        .exec(function(error, doc) {
-            // Send any errors to the browser
-            if (error) {
-                res.send(error);
-            }
-            // Or, send our results to the browser, which will now include the books stored in the library
-            else {
-                console.log("does this work: " + doc[3].notes[0].body);
-                res.send(doc);
-                return res.render("saved", {
-                    notesSaved: notesSaved
-                });
-            }
-        });
-});
+// app.get("/saved/modal", function(req, res) {
+//     // Set up a query to find all of the entries in our Library..
+//     Business.find({})
+//         // ..and string a call to populate the entry with the books stored in the library's books array
+//         // This simple query is incredibly powerful. Remember this one!
+//         .populate("notes")
+//         // Now, execute that query
+//         .exec(function(error, doc) {
+//             // Send any errors to the browser
+//             if (error) {
+//                 res.send(error);
+//             }
+//             // Or, send our results to the browser, which will now include the books stored in the library
+//             else {
+//                 console.log("does this work: " + doc[3].notes[0].body);
+//                 res.send(doc);
+//                 return res.render("saved", {
+//                     notesSaved: notesSaved
+//                 });
+//             }
+//         });
+// });
 app.get("/api/notes", function(req, res) {
     Note.find(function(err, notes) {
         if (err) return console.error(err);
@@ -184,7 +184,7 @@ app.put('/:id', function(req, res) {
     });
 });
 // Create a new note or replace an existing note
-app.post("/note/:id", function(req, res) {
+app.post("/saved/notes/:id", function(req, res) {
     // Create a new note and pass the req.body to the entry
     var newNote = new Note(req.body);
     console.log("NEWNOTE:" + newNote);
@@ -215,7 +215,7 @@ app.post("/note/:id", function(req, res) {
                 }
                 // Or send the newdoc to the browser
                 else {
-                    res.send(newdoc);
+                    res.redirect("/saved");
                 }
             });
         }
