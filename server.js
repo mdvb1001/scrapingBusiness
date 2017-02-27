@@ -72,14 +72,14 @@ app.get('/saved', function(_request, response) {
             }
         });
 });
-// route for deleting articles from saved list
-app.delete('saved/notes/:id', function(request, response) {
-        var noteId = request.params.id;
+// route for deleting notes from saved articles
+app.delete('/saved/notes/:id', function(req, res) {
+        var noteId = req.params.id;
         Note.remove({ _id: noteId }, function(error, _note) {
             if (error) {
-                response.send(error);
+                res.send(error);
             } else {
-                response.redirect('/saved');
+                res.redirect('/saved');
             }
         });
     });
@@ -91,7 +91,7 @@ app.get("/api/notes", function(req, res) {
     });
 });
 // route to delete an article from the 'saved' page
-app.put("saved/delete/:id", function(req, res) {
+app.put("/saved/delete/:id", function(req, res) {
     var articleDelete = req.params.id;
     console.log("articleDelete: " + articleDelete);
     Business.findByIdAndUpdate(articleDelete, {
@@ -197,16 +197,7 @@ app.get("/scrape", function(req, res) {
         });
     });
     // refresh/pull data on DOM
-    Business.find().sort({
-        _id: -1
-    }).then(function(result) {
-        // define two categories of burgers
-        var articles = result;
-        console.log("Articles: " + articles);
-        return res.render("index", {
-            articles: articles
-        });
-    });
+    res.redirect('/');
 });
 // This will send a "Scrape Complete" message to the browser
 // Listen on port 3000 or process.env.PORT
